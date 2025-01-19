@@ -51,7 +51,7 @@ export function useCats() {
       )
       const newCats: Cat[] = await response.json()
 
-      state.favorites.forEach(async catId => {
+      for (const catId of state.favorites) {
         const cat = await fetch(
           `https://api.thecatapi.com/v1/images/${catId}`,
           {
@@ -62,7 +62,7 @@ export function useCats() {
         )
         const catData = await cat.json()
         newCats.push(catData)
-      })
+      }
       console.log(newCats)
 
       setState(prev => ({
