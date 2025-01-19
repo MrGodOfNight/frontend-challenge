@@ -17,16 +17,19 @@ export function useCats() {
     page: 1,
   })
 
-  // Загрузка избранных котиков из localStorage при монтировании компонента (chrome очищает его :( )
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('catFavorites')
-    if (savedFavorites) {
-      setState(prev => ({
-        ...prev,
-        favorites: new Set(JSON.parse(savedFavorites))
-      }))
-    }
-  }, [])
+    // Загрузка избранных котиков из localStorage при монтировании компонента (chrome очищает его :( )
+    useEffect(() => {
+      const savedFavorites = localStorage.getItem('catFavorites')
+      if (savedFavorites) {
+        setState(prev => {
+        console.log(savedFavorites)
+        return {
+          ...prev,
+          favorites: new Set(JSON.parse(savedFavorites))
+        }})
+      }
+    }, [])
+  
 
   // Сохранение избранных котиков в localStorage при каждом изменении
   useEffect(() => {
