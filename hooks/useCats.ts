@@ -17,7 +17,7 @@ export function useCats() {
     page: 1,
   })
 
-    // Загрузка избранных котиков из localStorage при монтировании компонента (chrome очищает его :( )
+    // Загрузка избранных котиков из localStorage при монтировании компонента
     useEffect(() => {
       const savedFavorites = localStorage.getItem('catFavorites')
       if (savedFavorites) {
@@ -27,7 +27,6 @@ export function useCats() {
         }))
       }
     }, [])
-  
 
   // Сохранение избранных котиков в localStorage при каждом изменении
   useEffect(() => {
@@ -50,20 +49,6 @@ export function useCats() {
         }
       )
       const newCats: Cat[] = await response.json()
-
-      for (const catId of state.favorites) {
-        const cat = await fetch(
-          `https://api.thecatapi.com/v1/images/${catId}`,
-          {
-            headers: {
-              'x-api-key': API_KEY
-            }
-          }
-        )
-        const catData = await cat.json()
-        newCats.push(catData)
-      }
-      console.log(newCats)
 
       setState(prev => ({
         ...prev,
