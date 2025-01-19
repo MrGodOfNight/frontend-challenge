@@ -63,6 +63,7 @@ export function useCats() {
         const catData = await cat.json()
         newCats.push(catData)
       })
+      console.log(newCats)
 
       setState(prev => ({
         ...prev,
