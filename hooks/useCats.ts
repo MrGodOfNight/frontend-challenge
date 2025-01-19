@@ -21,12 +21,10 @@ export function useCats() {
     useEffect(() => {
       const savedFavorites = localStorage.getItem('catFavorites')
       if (savedFavorites) {
-        setState(prev => {
-        console.log(savedFavorites)
-        return {
+        setState(prev => ({
           ...prev,
           favorites: new Set(JSON.parse(savedFavorites))
-        }})
+        }))
       }
     }, [])
   
@@ -52,6 +50,19 @@ export function useCats() {
         }
       )
       const newCats: Cat[] = await response.json()
+
+      state.favorites.forEach(async catId => {
+        const cat = await fetch(
+          `https://api.thecatapi.com/v1/images/${catId}`,
+          {
+            headers: {
+              'x-api-key': API_KEY
+            }
+          }
+        )
+        const catData = await cat.json()
+        newCats.push(catData)
+      })
 
       setState(prev => ({
         ...prev,
