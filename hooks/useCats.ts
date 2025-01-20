@@ -1,11 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import {useEffect, useRef, useState} from 'react'
 import { Cat, CatState } from '@/types/cat'
 
-// API ключ для доступа к сервису с котиками
-const API_KEY = 'live_L38QKF0Hn0OQH3plfB5qIrP5pBX8cD1vIyss5Qri6fELFs8m8K2VmTHfIYrqM3AO'
-// Количество котиков, загружаемых за один запрос
+const API_KEY = "live_L38QKF0Hn0OQH3plfB5qIrP5pBX8cD1vIyss5Qri6fELFs8m8K2VmTHfIYrqM3AO"
 const LIMIT = 20
 
 export function useCats() {
@@ -23,11 +21,13 @@ export function useCats() {
     const savedFavorites = localStorage.getItem("catFavorites")
     if (savedFavorites) {
       const favorites = new Set(JSON.parse(savedFavorites))
+      // @ts-ignore
       setState((prev) => ({
         ...prev,
         favorites,
       }))
       if (!favoritesLoadedRef.current) {
+        // @ts-ignore
         loadFavoriteCats(favorites)
         favoritesLoadedRef.current = true
       }
