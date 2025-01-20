@@ -9,7 +9,6 @@ const API_KEY = 'live_L38QKF0Hn0OQH3plfB5qIrP5pBX8cD1vIyss5Qri6fELFs8m8K2VmTHfIY
 const LIMIT = 20
 
 export function useCats() {
-  // Инициализация состояния приложения
   const [state, setState] = useState<CatState>({
     cats: [],
     favorites: new Set(),
@@ -17,61 +16,88 @@ export function useCats() {
     page: 1,
   })
 
-    // Загрузка избранных котиков из localStorage при монтировании компонента
-    useEffect(() => {
-      const savedFavorites = localStorage.getItem('catFavorites')
-      if (savedFavorites) {
-        setState(prev => ({
-          ...prev,
-          favorites: new Set(JSON.parse(savedFavorites))
-        }))
+  const favoritesLoadedRef = useRef(false)
+
+  // Загрузка избранных котиков из localStorage при монтировании компонента
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem("catFavorites")
+    if (savedFavorites) {
+      const favorites = new Set(JSON.parse(savedFavorites))
+      setState((prev) => ({
+        ...prev,
+        favorites,
+      }))
+      if (!favoritesLoadedRef.current) {
+        loadFavoriteCats(favorites)
+        favoritesLoadedRef.current = true
       }
-    }, [])
+    }
+  }, [])
 
   // Сохранение избранных котиков в localStorage при каждом изменении
   useEffect(() => {
-    localStorage.setItem('catFavorites', JSON.stringify(Array.from(state.favorites)))
+    localStorage.setItem("catFavorites", JSON.stringify(Array.from(state.favorites)))
   }, [state.favorites])
+
+  // Функция загрузки любимых котиков
+  const loadFavoriteCats = async (favorites: Set<string>) => {
+    setState((prev) => ({ ...prev, loading: true }))
+    try {
+      const favoriteCatsPromises = Array.from(favorites).map((id) =>
+        fetch(`https://api.thecatapi.com/v1/images/${id}`, {
+          headers: { "x-api-key": API_KEY },
+        }).then((res) => res.json()),
+      )
+      const favoriteCats = await Promise.all(favoriteCatsPromises)
+      setState((prev) => ({
+        ...prev,
+        cats: [...favoriteCats.map((cat) => ({ ...cat, isFavorite: true })), ...prev.cats],
+        loading: false,
+      }))
+    } catch (error) {
+      console.error("Ошибка загрузки любимых котиков:", error)
+      setState((prev) => ({ ...prev, loading: false }))
+    }
+  }
 
   // Функция загрузки дополнительных котиков
   const loadMoreCats = async () => {
-    if (state.loading) return; // Ждём инициализации favorites
+    if (state.loading) return
 
-    setState(prev => ({ ...prev, loading: true }))
+    setState((prev) => ({ ...prev, loading: true }))
 
     try {
-      const response = await fetch(
-        `https://api.thecatapi.com/v1/images/search?limit=${LIMIT}&page=${state.page}`,
-        {
-          headers: {
-            'x-api-key': API_KEY
-          }
-        }
-      )
+      const response = await fetch(`https://api.thecatapi.com/v1/images/search?limit=${LIMIT}&page=${state.page}`, {
+        headers: {
+          "x-api-key": API_KEY,
+        },
+      })
       const newCats: Cat[] = await response.json()
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        cats: [...prev.cats, ...newCats],
+        cats: [...prev.cats, ...newCats.map((cat) => ({ ...cat, isFavorite: prev.favorites.has(cat.id) }))],
         page: prev.page + 1,
-        loading: false
+        loading: false,
       }))
     } catch (error) {
-      console.error('Ошибка загрузки котиков:', error)
-      setState(prev => ({ ...prev, loading: false }))
+      console.error("Ошибка загрузки котиков:", error)
+      setState((prev) => ({ ...prev, loading: false }))
     }
   }
 
   // Функция для добавления/удаления котика из избранного
   const toggleFavorite = (catId: string) => {
-    setState(prev => {
+    setState((prev) => {
       const newFavorites = new Set(prev.favorites)
-      if (newFavorites.has(catId)) {
+      const isFavorite = newFavorites.has(catId)
+      if (isFavorite) {
         newFavorites.delete(catId)
       } else {
         newFavorites.add(catId)
       }
-      return { ...prev, favorites: newFavorites }
+      const newCats = prev.cats.map((cat) => (cat.id === catId ? { ...cat, isFavorite: !isFavorite } : cat))
+      return { ...prev, favorites: newFavorites, cats: newCats }
     })
   }
 
@@ -85,6 +111,6 @@ export function useCats() {
     favorites: state.favorites,
     loading: state.loading,
     loadMoreCats,
-    toggleFavorite
+    toggleFavorite,
   }
 }

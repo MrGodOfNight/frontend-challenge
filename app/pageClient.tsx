@@ -12,7 +12,7 @@ export default function PageClient() {
   const [activeTab, setActiveTab] = useState('all')
 
   // Фильтруем котиков для отображения избранных
-  const favoriteCats = cats.filter(cat => favorites.has(cat.id))
+  const favoriteCats = cats.filter((cat) => cat.isFavorite)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -45,20 +45,10 @@ export default function PageClient() {
       {/* Основной контент */}
       <main className="flex-1 bg-white">
         <div className="max-w-7xl mx-auto py-6">
-          {activeTab === 'all' ? (
-            <CatGrid
-              cats={cats}
-              favorites={favorites}
-              onToggleFavorite={toggleFavorite}
-              onLoadMore={loadMoreCats}
-              loading={loading}
-            />
+          {activeTab === "all" ? (
+            <CatGrid cats={cats} onToggleFavorite={toggleFavorite} onLoadMore={loadMoreCats} loading={loading} />
           ) : (
-            <CatGrid
-              cats={favoriteCats}
-              favorites={favorites}
-              onToggleFavorite={toggleFavorite}
-            />
+            <CatGrid cats={favoriteCats} onToggleFavorite={toggleFavorite} />
           )}
         </div>
       </main>
